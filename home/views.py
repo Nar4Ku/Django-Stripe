@@ -12,7 +12,7 @@ stripe.api_key = stripe_private         # Atribuindo a chave privada ao artibuto
 
 def home(request):
     
-    print('Key: {}'.format(stripe_pub))
+    # print('Key: {}'.format(stripe_pub))
         
     context = {
         'key': stripe_pub,            #Passando a chave publica para variavel de contexto
@@ -27,21 +27,28 @@ def checkout(request):
     
     token  = request.POST['stripeToken']
     
-    #Criando um  comprador e puxando os dados do formulário 
-    customer = stripe.Customer.create(
-        email = request.POST['stripeEmail'],
-        source = token
-    )
+    # Criando um  comprador e puxando os dados do formulário 
+    # customer = stripe.Customer.create(
+    #     email = request.POST['stripeEmail'],
+    #     source = token
+    # )
 
     # Criando um pedido de compra
-    charge = stripe.Charge.create(
-        customer = customer.id,
-        amount = 500,                   #Deixar Dinamico depois
-        currency = 'brl',   
-        description = 'Some descrip'    #Deixar Dinamico depois
-        # source = cust 
-    )
-    # charge.save()
+    try:
+        charge = stripe.Charge.create(
+            # customer = customer.id,
+            amount = 500,                   #Deixar Dinamico depois
+            currency = 'usd',               #'brl' real   
+            description = 'Some descrip',    #Deixar Dinamico depois
+            card = token
+        )
+
+        x = charge.save()
+        if charge.save():
+            print('\nfoi??')
+            # print(x)
+    except:
+        print('foi não')
 
     return JsonResponse(charge)    # Obtendo o return in Json para verificação dos attrs
 
