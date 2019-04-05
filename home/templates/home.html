@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<form  action="{% url 'checkout' %}"method="POST">
+    {% csrf_token %}
+    <article>
+        <label>
+            <span>Valor = R$ 5,00</span>
+        </label>
+    </article>
+
+    <script src="https://checkout.stripe.com/checkout.js" class="stripe-button"
+        data-key="{{ key }}" data-amount="5500" data-name="Stripe Test2"
+        data-description="testatndo" data-image="https://stripe.com/img/documentation/checkout/marketplace.png"
+        data-locale="auto">
+        </script>
+
+
+</form>
+
+{% endblock %}
