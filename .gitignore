@@ -1,5 +1,5 @@
 home/__pycache__
 home/migrations/__pycache__
-stripe/__pycache__
+core/__pycache__
 __pycache__
-stripeKeys.py
+stripeKeys.py*

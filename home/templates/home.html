@@ -2,7 +2,7 @@
 
 {% block content %}
 
-<form  action="{% url 'checkout' %}"method="POST">
+<form  action="{% url 'checkout' %}" method="POST">
     {% csrf_token %}
     <article>
         <label>
