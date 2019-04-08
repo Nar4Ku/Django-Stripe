@@ -11,45 +11,16 @@
     </article>
 
     <script src="https://checkout.stripe.com/checkout.js" class="stripe-button"
-        data-key="{{ key }}" data-amount="5500" data-name="Stripe Test2"
-        data-description="testatndo" data-image="https://stripe.com/img/documentation/checkout/marketplace.png"
-        data-locale="auto">
-        </script>
-
-    <script>
-    /*Implementar o novo form
-    $(funtion(){
-        $("#user_form").submit(funtion(){
-            var form = this;
-
-            var card = {
-                number: $("#credit_card_number").val(),
-                expMonth: $("#expiry_month").val(),
-                expYear: $("#expiry_year").val(),
-                cvc: $("#cvv").val()
-            };
-
-            Stripe.createToken(card, function(status, response){
-                if (status === 200){
-                    console.log(status, response);
-                    $("#credit-card-errors").hide();
-                    $("#id_stripe_id").val(response.id);
-                    form.submit();
-                } 
-                
-                else {
-                    $("#stripe-error-message").text(response.error.message);
-                    $("#credit-card-errors").show();
-                    $("#user_submit").attr("disabled", false);
-                }
-            });  //end Stripe
-
-            return false;
-
-        });
-    });
-    */
-
+         data-key="{{ key }}"                           {% comment %} Public KEY {% endcomment %}
+        data-currency="brl"                             {% comment %} Currency {% endcomment %}
+        data-amount="{{ amount }}"                      {% comment %} Amount {% endcomment %}
+        data-name="{{ modalTitle}}"                     {% comment %} Modal Titile {% endcomment %}
+        data-description="{{ modalSubTitle }}"          {% comment %} Modal SubTitle {% endcomment %}
+        data-image="{{ img }}"                          {% comment %} Path to Modal Img {% endcomment %}
+        data-panel-label=" {{ btn_modal_title }}"       {% comment %} BTN of Modal title {% endcomment %}
+        data-label="{{ btn_title }}"                    {% comment %} Btn to open modal {% endcomment %}
+        data-allow-remember-me="false"                  {% comment %} Remember me (cell phone validation) {% endcomment %}
+        data-locale="auto">                             
     </script>
 
 </form>

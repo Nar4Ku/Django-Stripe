@@ -11,11 +11,22 @@ stripe.api_key = stripe_private         # Atribuindo a chave privada ao artibuto
 
 
 def home(request):
-    
-    # print('Key: {}'.format(stripe_pub))
-        
+
+    btn_title = "Abrir Modal"
+    valor = 500
+    titulo = 'Titulo Modal'
+    subtitulo = 'SubTitulo Modal'
+    imagem = 'https://stripe.com/img/documentation/checkout/marketplace.png'
+    btn_modal_title = 'modalBtn Text'
+
     context = {
         'key': stripe_pub,            #Passando a chave publica para variavel de contexto
+        'amount': valor,
+        'modalTitle' : titulo,
+        'modalSubTitle': subtitulo,
+        'img': imagem,
+        'btn_title': btn_title,
+        'btn_modal_title': btn_modal_title
     }
 
     return render(request, 'home.html', context)
@@ -24,31 +35,19 @@ def home(request):
 def checkout(request):
 
     # from stripe import
-    
     token  = request.POST['stripeToken']
     
-    # Criando um  comprador e puxando os dados do formulário 
-    # customer = stripe.Customer.create(
-    #     email = request.POST['stripeEmail'],
-    #     source = token
-    # )
-
     # Criando um pedido de compra
     try:
         charge = stripe.Charge.create(
-            # customer = customer.id,
             amount = 500,                   #Deixar Dinamico depois
-            currency = 'usd',               #'brl' real   
+            currency = 'brl',               #'brl' real   
             description = 'Some descrip',    #Deixar Dinamico depois
             card = token
         )
 
-        x = charge.save()
-        if charge.save():
-            print('\nfoi??')
-            # print(x)
     except:
-        print('foi não')
+        print('Handler error')
 
     return JsonResponse(charge)    # Obtendo o return in Json para verificação dos attrs
 
