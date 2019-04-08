@@ -2,27 +2,130 @@
 
 {% block content %}
 
-<form  action="{% url 'checkout' %}" method="POST">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+
+<fieldset>
+    <legend>Valor</legend>
+    <table>
+        <tbody>
+            <tr>
+                <td><label>Total R$</label></td>
+                <td><input type="number" min="0" class="total" value="100" /></td>
+            </tr>
+            <tr name="condicao-pag" id="condicao-pag">
+                <td><label>Condição de pagamento:</label></td>
+                <td>
+                    <select>
+                    <option value=0>À vista</option>
+                    <option value=1>À prazo</option>
+                    </select>
+                </td>
+            </tr>
+            <tr id="parcelamento" style="display:none">
+                <td>Parcelar em</td>
+                <td>
+                    <select id="n-parcelas">
+                        <option></option>
+                        <option value="2" selected>2x</option>
+                        <option value="3">3x</option>
+                        <option value="4">4x</option>
+                    </select>
+                </td>
+            </tr>
+
+            <tr id="parcelas" style="display:none">
+
+
+            </tr>
+        </tbody>
+    </table>
+</fieldset>
+
+<form action="{% url 'checkout' %}" method="POST">
     {% csrf_token %}
     <article>
-        <label>
-            <span>Valor = R$ 5,00</span>
-        </label>
+        <fieldset>
+            <legend>Selecione os produtos para comprar</legend>
+            <input type="checkbox" id="shampoo" value="70" /><label for="shampoo">Meu
+                Shampoo</label><br />
+            <input type="checkbox" id="condicionador" value="95" /><label for="condicionador">Meu
+                Condicionador</label><br />
+        </fieldset>
+        <hr>
+        <fieldset>
+            <legend>Valor</legend>
+            <select id='total_amount' class="form-control" required>
+                <option value='1'>A vista</option>
+                <option value='2'>x2</option>
+                <option value='3'>x3</option>
+                <option value='4'>x4</option>
+                <option value='5'>x5</option>
+                <option value='6'>x5</option>
+            </select>
+            <label>value</label>
+        </fieldset>
+
     </article>
 
-    <script src="https://checkout.stripe.com/checkout.js" class="stripe-button"
-         data-key="{{ key }}"                           {% comment %} Public KEY {% endcomment %}
-        data-currency="brl"                             {% comment %} Currency {% endcomment %}
-        data-amount="{{ amount }}"                      {% comment %} Amount {% endcomment %}
-        data-name="{{ modalTitle}}"                     {% comment %} Modal Titile {% endcomment %}
-        data-description="{{ modalSubTitle }}"          {% comment %} Modal SubTitle {% endcomment %}
-        data-image="{{ img }}"                          {% comment %} Path to Modal Img {% endcomment %}
-        data-panel-label=" {{ btn_modal_title }}"       {% comment %} BTN of Modal title {% endcomment %}
-        data-label="{{ btn_title }}"                    {% comment %} Btn to open modal {% endcomment %}
-        data-allow-remember-me="false"                  {% comment %} Remember me (cell phone validation) {% endcomment %}
-        data-locale="auto">                             
-    </script>
+    <script src="https://checkout.stripe.com/checkout.js" class="stripe-button" data-key="{{ key }}" data-currency="brl"
+        data-amount="{{ amount }}" data-name="{{ modalTitle}}" data-description="{{ modalSubTitle }}"
+        data-image="{{ img }}" data-panel-label=" {{ btn_modal_title }}" data-label="{{ btn_title }}"
+        data-allow-remember-me="false" data-locale="auto">
+        </script>
 
 </form>
+<script>
+    //Funcao para atualizar as parcelas e seus valores
+    function atualizaValores() {
+        // pegando a quantidade de parcelas
+        var valor = $("#n-parcelas").val();
 
+        //variavel que recebe os inputs(HTML)
+        var geraInputs = "";
+
+        //Calculando o valor de cada parcela
+        var valorParcela = parseFloat($(".total").val() / valor).toFixed(2);
+
+        //gerando os inputs com os valores de cada parcela
+        for (var i = 0; i < valor; i++) {
+            geraInputs += "<td> <input type='text' name='parcela[]' value='" + valorParcela + "'> ";
+        }
+
+        // inserindo as parcelas 
+        $("#parcelas").html(geraInputs);
+    }
+
+    $(document).ready(function (e) {
+        $(".total").on('change keyup keydown keypress', function () {
+            // ao alterar o valor total, chama a funcao para alterar as parcelas
+            atualizaValores();
+
+
+        });
+        $('#condicao-pag').on('change', 'select', function () {
+            // ao alterar a condicao de pagamento,chama a funcao para alterar as parcelas
+            atualizaValores();
+            if ($(this).val() == 1) {
+                $('#parcelamento').show();
+                /*Calcular valor das parcelas (2x, 3x, 4x) e preencher inputs*/
+                $('#parcelas').show();
+            }
+            else {
+                $('#parcelamento').hide();
+                $('#parcelas').hide();
+                $("input[name='parcela[]']").val('');
+            }
+        })
+
+        $('#n-parcelas').on('change', function () {
+            /*Calcular valor das parcelas (2x, 3x, 4x) e preencher inputs*/
+            //Ao alterar a quantidade e parcelas chama a funcao para alterar as parcelas
+            atualizaValores();
+        });
+
+
+
+    });
+
+</script>
 {% endblock %}

@@ -55,3 +55,6 @@ def checkout(request):
     #     'token': token,
     # }
     #return render(request, 'success.html', context)
+
+
+    # 4% + 0.50
