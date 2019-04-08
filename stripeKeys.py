@@ -1,3 +1,3 @@
 #Stripe KEYS
-STRIPE_PUBLIC_KEY = 'pk_test_UqRtOS2DynlyRlnSd9m68UB700SnQOHrJg'
-STRIPE_PRIVATE_KEY = 'sk_test_bAmqjh1LtKeRPuJPqge9JjVG00s0NF2ZAD'
+STRIPE_PUBLIC_KEY = 'Public key of Stripe API'
+STRIPE_PRIVATE_KEY = 'Private key of Stripe API'
