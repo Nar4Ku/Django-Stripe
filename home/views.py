@@ -11,17 +11,29 @@ stripe.api_key = stripe_private         # Atribuindo a chave privada ao artibuto
 
 
 def home(request):
+    import math
 
-    btn_title = "Abrir Modal"
-    valor = 500
+    amount = 17210
+    if request.method == 'POST':
+        print(request.POST['payment'])
+        if request.POST['payment'] == 1:
+            centavos = request.POST['valParcelas']
+            amount = math.trunc((float(centavos)*100))
+        else:
+            centavos = request.POST['valVista']
+            amount = math.trunc((float(centavos)*100))
+        print("valor em centavos", amount)
+
+    # Valores que estaram no modal do cartão --Modificar
+    btn_title = "Modal"
     titulo = 'Titulo Modal'
     subtitulo = 'SubTitulo Modal'
     imagem = 'https://stripe.com/img/documentation/checkout/marketplace.png'
-    btn_modal_title = 'modalBtn Text'
+    btn_modal_title = 'Pagar'
 
     context = {
         'key': stripe_pub,            #Passando a chave publica para variavel de contexto
-        'amount': valor,
+        'amount': amount,
         'modalTitle' : titulo,
         'modalSubTitle': subtitulo,
         'img': imagem,
@@ -41,9 +53,10 @@ def checkout(request):
     try:
         charge = stripe.Charge.create(
             amount = 500,                   #Deixar Dinamico depois
-            currency = 'brl',               #'brl' real   
+            currency = 'brl',  
             description = 'Some descrip',    #Deixar Dinamico depois
-            card = token
+            card = token,
+            # metadata={'order_id': 'ID_transation'}
         )
 
     except:

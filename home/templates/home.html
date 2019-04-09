@@ -3,9 +3,10 @@
 {% block content %}
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/js-cookie@2/src/js.cookie.min.js"></script>
 
 
-<form action="{% url 'checkout' %}" method="POST">
+<form method="POST">
     {% csrf_token %}
     <article>
         <fieldset>
@@ -14,129 +15,147 @@
                 Shampoo</label><br />
             <input type="checkbox" name="produto" id="condicionador" value="95" /><label for="condicionador">Meu
                 Condicionador</label><br />
+            <br>
+            <button id="check">Calcula o Valor</button>
 
-            <button id="check">Calcula o Valor</button>  
+            <hr>
+
+            <fieldset>
+                <legend>Valor</legend>
+                <table>
+                    <tbody>
+                        <tr>
+                            <td><label>Total a Vista R$</label></td>
+                            <td><input type="text" name="val-avista" id='total' class="total" value="0" required/>
+                                <input type="hidden" id="valorBase" /></td>
+
+                        </tr>
+                        <tr name="condicao-pag" id="condicao-pag">
+                            <td><label>Condição de pagamento:</label></td>
+                            <td>
+                                <select  id="payment" name="payment">
+                                    <option value=0>À vista</option>
+                                    <option value=1>À prazo</option>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr id="parcelamento" style="display:none">
+                            <td>Parcelar em</td>
+                            <td>
+                                <select id="n-parcelas">
+                                    <option></option>
+                                    <option value="2" selected>2x</option>
+                                    <option value="3">3x</option>
+                                    <option value="4">4x</option>
+                                </select>
+                            </td>
+                        </tr>
+
+                        <tr id="parcelas" style="display:none"></tr>
+                        <input type="hidden" id="val-parcelas" name="val-parcelas"/>
+                        <tr id="juros" style="display: none; font-size: 0.6em"><td>*Valor com juros de 4% + R$ 0,50 por transação</td></tr>
+                    </tbody>
+                </table>
+            </fieldset>
+            <br>
+            <button type="submit" id="final">COMPRAR</button>
         </fieldset>
-        <hr>
-
-        <fieldset>
-            <legend>Valor</legend>
-            <table>
-                <tbody>
-                    <tr>
-                        <td><label>Total a Vista R$</label></td>
-                        <td><input type="number" min="0" id='total' class="total" value="0" />
-                        <input type="hidden" id="valorBase"/></td>
-                        
-                    </tr>
-                    <tr name="condicao-pag" id="condicao-pag">
-                        <td><label>Condição de pagamento:</label></td>
-                        <td>
-                            <select>
-                            <option value=0>À vista</option>
-                            <option value=1>À prazo</option>
-                            </select>
-                        </td>
-                    </tr>
-                    <tr id="parcelamento" style="display:none">
-                        <td>Parcelar em</td>
-                        <td>
-                            <select id="n-parcelas">
-                                <option></option>
-                                <option value="2" selected>2x</option>
-                                <option value="3">3x</option>
-                                <option value="4">4x</option>
-                                <option value="5">5x</option>
-                                <option value="6">6x</option>
-                            </select>
-                        </td>
-                    </tr>
-
-                    <tr id="parcelas" style="display:none">
-
-                    </tr>
-                </tbody>
-            </table>
-        </fieldset>
-
     </article>
-
+</form>
+<form method="POST">
+    {% csrf_token %}
     <script src="https://checkout.stripe.com/checkout.js" class="stripe-button" data-key="{{ key }}" data-currency="brl"
-        data-amount="{{ amount }}" data-name="{{ modalTitle}}" data-description="{{ modalSubTitle }}"
-        data-image="{{ img }}" data-panel-label=" {{ btn_modal_title }}" data-label="{{ btn_title }}"
-        data-allow-remember-me="false" data-locale="auto">
-        </script>
-
+    data-amount="{{ amount }}" data-name="{{ modalTitle}}" data-description="{{ modalSubTitle }}" data-image="{{ img }}"
+    data-panel-label=" {{ btn_modal_title }}" data-label="{{ btn_title }}" data-allow-remember-me="false"
+    data-locale="auto">
+    </script>
 </form>
 <script>
     //Funcao para atualizar as parcelas e seus valores
     function atualizaValores() {
-        // pegando a quantidade de parcelas
-        var parcelas = $("#n-parcelas").val();
 
-        //variavel que recebe os inputs(HTML)
-        var geraInputs = "";
+        var parcelas = $("#n-parcelas").val();      // pegando a quantidade de parcelas
+        var geraInputs = "";                        //variavel que recebe os inputs(HTML)
 
         //Calculando o valor de cada parcela
         var valorParcela = parseFloat($("#valorBase").val() / parcelas);
         var parcelaComJuros = ((valorParcela * 1.04) + 0.5);
+        $("#val-parcelas").val(parcelaComJuros)
 
         //gerando os inputs com os valores de cada parcela
-        for (var i = 0; i < parcelas; i++) {
-            geraInputs += "<td> <input type='text' name='parcela[]' value='" + parcelaComJuros.toFixed(2) + "'> ";
-        }
+        geraInputs += "<td><input type='text' id='valorParcela' name='parcela[]' value='Parcelas de R$ " + parcelaComJuros.toFixed(2) + "*'> ";
 
-        // inserindo as parcelas 
-        $("#parcelas").html(geraInputs);
+        $("#parcelas").html(geraInputs);            // inserindo as parcelas 
     }
 
     $(document).ready(function () {
+        var csrftoken = Cookies.get('csrftoken');
+        $(".stripe-button-el").hide();
 
         //Evento para pegar os valores dos produtos selecionados
-        $('#check').on('click', function(e){ //event
+        $('#check').on('click', function (e) {
             e.preventDefault();
             var valor = 0;
             if ($("#shampoo").is(':checked')) {
                 valor += parseInt($("#shampoo").val());
             }
 
-            if ($("#condicionador").is(':checked')){
+            if ($("#condicionador").is(':checked')) {
                 valor += parseInt($("#condicionador").val());
             }
-            //Adiciona  o juros 4% + R$0,50
+
             valorBase = valor;
-            valorVista = (valor * 1.04) + 0.5;
-            //console.log(valor)
+            valorVista = (valor * 1.04) + 0.5;   //Adiciona  os juros
 
-            var total = $('#total').val(valorVista.toFixed(2));
+            $('#total').val(valorVista.toFixed(2));
             $('#valorBase').val(valorBase.toFixed(2));
-            console.log(total.val());
         });
 
-
+        // ao alterar o valor total, chama a funcao para alterar as parcelas
         $(".total").on('change keyup keydown keypress', function () {
-            // ao alterar o valor total, chama a funcao para alterar as parcelas
             atualizaValores();
-
         });
+
+        // ao alterar a condicao de pagamento,chama a funcao para alterar as parcelas
         $('#condicao-pag').on('change', 'select', function () {
-            // ao alterar a condicao de pagamento,chama a funcao para alterar as parcelas
             atualizaValores();
             if ($(this).val() == 1) {
                 $('#parcelamento').show();
-                /*Calcular valor das parcelas (2x, 3x, 4x) e preencher inputs*/
                 $('#parcelas').show();
+                $('#juros').show();
             }
             else {
                 $('#parcelamento').hide();
                 $('#parcelas').hide();
-                $("input[name='parcela[]']").val('');
+                $('#juros').hide();
+                $('#totalPrazo').hide();
             }
         })
 
-        $('#n-parcelas').on('change', function () {          
-            /*Calcular valor das parcelas e preencher inputs*/
+        //Calcular valor das parcelas e preencher inputs
+        $('#n-parcelas').on('change', function () {
             atualizaValores();
+        });
+    
+        //Req asyc para propria page
+        $('#final').on('click', function (e) {
+            e.preventDefault();
+            $.ajax({
+                type: "POST",
+                url: "{% url 'home' %}",
+                headers: {
+                    'X-CSRFToken': csrftoken
+                },
+                data: {
+                    payment: $('#payment').val(),
+                    valParcelas: $('#val-parcelas').val(),
+                    valVista: $('#total').val(),
+                },
+                success: function(response){
+                    console.log(response.payment)
+                    $(".stripe-button-el").show();
+                }        
+            });
         });
 
     });
