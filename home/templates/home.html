@@ -4,65 +4,59 @@
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
 
-<fieldset>
-    <legend>Valor</legend>
-    <table>
-        <tbody>
-            <tr>
-                <td><label>Total R$</label></td>
-                <td><input type="number" min="0" class="total" value="100" /></td>
-            </tr>
-            <tr name="condicao-pag" id="condicao-pag">
-                <td><label>Condição de pagamento:</label></td>
-                <td>
-                    <select>
-                    <option value=0>À vista</option>
-                    <option value=1>À prazo</option>
-                    </select>
-                </td>
-            </tr>
-            <tr id="parcelamento" style="display:none">
-                <td>Parcelar em</td>
-                <td>
-                    <select id="n-parcelas">
-                        <option></option>
-                        <option value="2" selected>2x</option>
-                        <option value="3">3x</option>
-                        <option value="4">4x</option>
-                    </select>
-                </td>
-            </tr>
-
-            <tr id="parcelas" style="display:none">
-
-
-            </tr>
-        </tbody>
-    </table>
-</fieldset>
 
 <form action="{% url 'checkout' %}" method="POST">
     {% csrf_token %}
     <article>
         <fieldset>
             <legend>Selecione os produtos para comprar</legend>
-            <input type="checkbox" id="shampoo" value="70" /><label for="shampoo">Meu
+            <input type="checkbox" name="produto" id="shampoo" value="70" /><label for="shampoo">Meu
                 Shampoo</label><br />
-            <input type="checkbox" id="condicionador" value="95" /><label for="condicionador">Meu
+            <input type="checkbox" name="produto" id="condicionador" value="95" /><label for="condicionador">Meu
                 Condicionador</label><br />
+
+            <button id="check">Calcula o Valor</button>  
         </fieldset>
         <hr>
+
         <fieldset>
             <legend>Valor</legend>
-            <select id='total_amount' class="form-control" required>
-                <option value='1'>A vista</option>
-                <option value='2'>x2</option>
-                <option value='3'>x3</option>
-                <option value='4'>x4</option>
-                <option value='5'>x5</option>
-                <option value='6'>x5</option>
-            </select>
-            <label>value</label>
+            <table>
+                <tbody>
+                    <tr>
+                        <td><label>Total a Vista R$</label></td>
+                        <td><input type="number" min="0" id='total' class="total" value="0" />
+                        <input type="hidden" id="valorBase"/></td>
+                        
+                    </tr>
+                    <tr name="condicao-pag" id="condicao-pag">
+                        <td><label>Condição de pagamento:</label></td>
+                        <td>
+                            <select>
+                            <option value=0>À vista</option>
+                            <option value=1>À prazo</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr id="parcelamento" style="display:none">
+                        <td>Parcelar em</td>
+                        <td>
+                            <select id="n-parcelas">
+                                <option></option>
+                                <option value="2" selected>2x</option>
+                                <option value="3">3x</option>
+                                <option value="4">4x</option>
+                                <option value="5">5x</option>
+                                <option value="6">6x</option>
+                            </select>
+                        </td>
+                    </tr>
+
+                    <tr id="parcelas" style="display:none">
+
+                    </tr>
+                </tbody>
+            </table>
         </fieldset>
 
     </article>
@@ -78,28 +72,51 @@
     //Funcao para atualizar as parcelas e seus valores
     function atualizaValores() {
         // pegando a quantidade de parcelas
-        var valor = $("#n-parcelas").val();
+        var parcelas = $("#n-parcelas").val();
 
         //variavel que recebe os inputs(HTML)
         var geraInputs = "";
 
         //Calculando o valor de cada parcela
-        var valorParcela = parseFloat($(".total").val() / valor).toFixed(2);
+        var valorParcela = parseFloat($("#valorBase").val() / parcelas);
+        var parcelaComJuros = ((valorParcela * 1.04) + 0.5);
 
         //gerando os inputs com os valores de cada parcela
-        for (var i = 0; i < valor; i++) {
-            geraInputs += "<td> <input type='text' name='parcela[]' value='" + valorParcela + "'> ";
+        for (var i = 0; i < parcelas; i++) {
+            geraInputs += "<td> <input type='text' name='parcela[]' value='" + parcelaComJuros.toFixed(2) + "'> ";
         }
 
         // inserindo as parcelas 
         $("#parcelas").html(geraInputs);
     }
 
-    $(document).ready(function (e) {
+    $(document).ready(function () {
+
+        //Evento para pegar os valores dos produtos selecionados
+        $('#check').on('click', function(e){ //event
+            e.preventDefault();
+            var valor = 0;
+            if ($("#shampoo").is(':checked')) {
+                valor += parseInt($("#shampoo").val());
+            }
+
+            if ($("#condicionador").is(':checked')){
+                valor += parseInt($("#condicionador").val());
+            }
+            //Adiciona  o juros 4% + R$0,50
+            valorBase = valor;
+            valorVista = (valor * 1.04) + 0.5;
+            //console.log(valor)
+
+            var total = $('#total').val(valorVista.toFixed(2));
+            $('#valorBase').val(valorBase.toFixed(2));
+            console.log(total.val());
+        });
+
+
         $(".total").on('change keyup keydown keypress', function () {
             // ao alterar o valor total, chama a funcao para alterar as parcelas
             atualizaValores();
-
 
         });
         $('#condicao-pag').on('change', 'select', function () {
@@ -117,15 +134,11 @@
             }
         })
 
-        $('#n-parcelas').on('change', function () {
-            /*Calcular valor das parcelas (2x, 3x, 4x) e preencher inputs*/
-            //Ao alterar a quantidade e parcelas chama a funcao para alterar as parcelas
+        $('#n-parcelas').on('change', function () {          
+            /*Calcular valor das parcelas e preencher inputs*/
             atualizaValores();
         });
 
-
-
     });
-
 </script>
 {% endblock %}
